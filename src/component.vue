@@ -1,5 +1,5 @@
 <template>
-  <input :type="type" @input="onInput"/>
+  <input :type="type">
 </template>
 
 <script type="text/javascript">
@@ -41,25 +41,31 @@
       if (this.cleave) return;
 
       this.cleave = new Cleave(this.$el, this.options);
-      this.cleave.setRawValue(this.value)
+      this.cleave.setRawValue(this.value);
+
+      /**
+       * `@input="onInput"` approach is not reliable, there are cases where the `input` event not gets triggered.
+       * for example CTRL+X (cut)
+       * This is a workaround unless cleave.js emits an custom event to notify about internal changes
+       * see https://github.com/nosir/cleave.js/pull/306
+       */
+      this.$watch('cleave.properties.result', this.onInput, {
+        deep: true,
+        immediate: false
+      })
     },
     methods: {
       /**
-       * Watch for value changed by cleave and notify parent component
-       * Note: we have to wait for DOM to get updated by cleave.js in order to get final value
-       *
-       * @param event
+       * Watch for value changed by cleave itself and notify parent component
        */
-      onInput(event) {
-        this.$nextTick(() => {
-          let value = this.raw ? this.cleave.getRawValue() : event.target.value;
-          this.$emit('input', value);
-        })
+      onInput() {
+        let value = this.raw ? this.cleave.getRawValue() : this.$el.value;
+        this.$emit('input', value);
       },
     },
     watch: {
       /**
-       * Watch for any changes in options and redraw
+       * Watch for any changes in options prop and redraw
        *
        * @param newOptions Object
        */

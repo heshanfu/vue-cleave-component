@@ -40,6 +40,7 @@ describe('Cleave props', () => {
   });
 
   test('validates v-model', () => {
+    // Cleaver way to get vModel out of props
     let vModel = wrapper.vm.$options.props.value;
 
     expect(vModel.validator(false)).toBe(false);
