@@ -1,9 +1,12 @@
 <template>
-  <input :type="type" @input="onInput"/>
+  <input :type="type"/>
 </template>
 
 <script type="text/javascript">
   import Cleave from 'cleave.js'
+
+  // Will listen to these events on input
+  const events = ['input', 'cut'];
 
   export default {
     name: 'cleave',
@@ -41,20 +44,22 @@
       if (this.cleave) return;
 
       this.cleave = new Cleave(this.$el, this.options);
-      this.cleave.setRawValue(this.value)
+      this.cleave.setRawValue(this.value);
+
+      events.map((name) => {
+        this.$el.addEventListener(name, this.emitEvent);
+      });
+
     },
     methods: {
       /**
        * Watch for value changed by cleave and notify parent component
-       * Note: we have to wait for DOM to get updated by cleave.js in order to get final value
        *
        * @param event
        */
-      onInput(event) {
-        this.$nextTick(() => {
-          let value = this.raw ? this.cleave.getRawValue() : event.target.value;
-          this.$emit('input', value);
-        })
+      emitEvent(event) {
+        let value = this.raw ? this.cleave.getRawValue() : event.target.value;
+        this.$emit('input', value);
       },
     },
     watch: {
